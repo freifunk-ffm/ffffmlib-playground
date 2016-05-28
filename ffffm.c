@@ -1,10 +1,17 @@
-#include "ffffm.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
+#include <uci.h>
+
+#include "ffffm.h"
+
+struct ffffm_wireless_context {
+	struct uci_context *uctx;
+};
+
+//static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
+static const char *gatewayfile = "test";
 
 // https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-mesh-batman-adv-core/src/respondd.c
 char *ffffm_get_nexthop() {
@@ -30,6 +37,28 @@ char *ffffm_get_nexthop() {
 	free(line);
 	fclose(f);
 	return ret;
+}
+
+struct ffffm_wireless_context *ffffm_wireless_context_new(void) {
+	struct ffffm_wireless_context *ret = calloc(1, sizeof(struct ffffm_wireless_context));
+	ret->uctx = uci_alloc_context();
+	ret->uctx->flags &= ~UCI_FLAG_STRICT;
+	return ret;
+}
+
+int ffffm_get_chan24(struct ffffm_wireless_context *ctx) {
+	return -1;
+}
+
+int ffffm_get_chan5(struct ffffm_wireless_context *ctx) {
+	return -2;
+}
+
+double ffffm_get_airtime(void) {
+	static long long last_active_time;
+	static long long last_busy_time;
+	static long long last_timestamp;
+	return -1;
 }
 
 int main() {
