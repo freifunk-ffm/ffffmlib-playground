@@ -52,11 +52,15 @@ static const luaL_Reg ffffmlib[] = {
 	{NULL, NULL},
 };
 
-LUALIB_API int luaopen_ffffm (lua_State *L) {
+LUALIB_API int luaopen_ffffm(lua_State *L) {
+#if LUA_VERSION_NUM > 501
+	luaL_newLib(L, ffffmlib);
+#else
 	luaL_register(L, "ffffm", ffffmlib);
+#endif
 	return 1;
 }
 
-LUALIB_API int luaopen_lua (lua_State *L) {
+LUALIB_API int luaopen_lua(lua_State *L) {
 	return luaopen_ffffm(L);
 }
