@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #define LUA_LIB
+#define LUA_COMPAT_MODULE
 
 #include "lua.h"
 #include "lauxlib.h"
@@ -27,8 +28,4 @@ static const luaL_Reg ffffmlib[] = {
 LUALIB_API int luaopen_ffffm (lua_State *L) {
 	luaL_register(L, "ffffm", ffffmlib);
 	return 1;
-}
-
-LUALIB_API int luaopen_lua (lua_State *L) {
-	return luaopen_ffffm(L);
 }
