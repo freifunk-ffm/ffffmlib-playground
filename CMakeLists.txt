@@ -36,8 +36,13 @@ install(FILES gluon-announce.lua
 	RENAME ffffm
 	DESTINATION lib/gluon/announce/nodeinfo.d)
 
+enable_testing()
 add_executable(ffffm-test ffffm-test.c)
 target_link_libraries(ffffm-test ffffm)
+add_test(NAME ffffm-test COMMAND ffffm-test)
 
 add_executable(ffffm-respondd-test ffffm-respondd-test.c)
 target_link_libraries(ffffm-respondd-test ffffm-respondd)
+add_test(NAME ffffm-respondd-test COMMAND ffffm-respondd-test)
+
+add_test(NAME ffffm-lua-test COMMAND ffffm-lua-test)
