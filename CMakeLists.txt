@@ -7,9 +7,12 @@ set(BUILD_SHARED_LIBS true)
 INCLUDE(FindPkgConfig)
 pkg_search_module(LUA REQUIRED lua5.1)
 pkg_search_module(JSON REQUIRED json-c)
+pkg_search_module(UNL REQUIRED libnl-tiny)
 
 add_library(ffffm ffffm.c)
 target_link_libraries(ffffm uci)
+target_link_libraries(ffffm ${UNL_LIBRARIES})
+target_include_directories(ffffm PUBLIC ${UNL_INCLUDE_DIRS})
 
 add_library(ffffm-respondd ffffm-respondd.c)
 target_link_libraries(ffffm-respondd ffffm)

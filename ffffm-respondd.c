@@ -72,13 +72,21 @@ end:
 	
 }
 
+static struct json_object *get_airtime(void) {
+	double airtime = ffffm_get_airtime();
+	if (FFFFM_INVALID_AIRTIME == airtime)
+		return NULL;
+
+	return json_object_new_double(airtime);
+}
+
 static struct json_object *respondd_provider_nodeinfo(void) {
 	struct json_object *ret = json_object_new_object();
 
 	if (!ret)
 		return NULL;
 
-	struct json_object *nexthop, *wifi_info;
+	struct json_object *nexthop, *wifi_info, *airtime;
 
 	nexthop = get_nexthop();
 	if (nexthop)
@@ -87,6 +95,10 @@ static struct json_object *respondd_provider_nodeinfo(void) {
 	wifi_info = get_wifi_info();
 	if (wifi_info)
 		json_object_object_add(ret, "wifi_info", wifi_info);
+
+	airtime = get_airtime();
+	if (airtime)
+		json_object_object_add(ret, "airtime", airtime);
 
 	return ret;
 }

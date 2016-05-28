@@ -21,6 +21,8 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,13 +30,19 @@
 
 #include <uci.h>
 
+#include <sys/socket.h>
+#include <unl.h>
+#include <linux/nl80211.h>
+
 #include "ffffm.h"
 
 const unsigned int FFFFM_INVALID_CHANNEL = 0;
+const double FFFFM_INVALID_AIRTIME = -1;
 
 static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
 static const char *wifi_24_dev = "radio0";
 static const char *wifi_50_dev = "radio1";
+static const char *airtime_interface = "client0";
 
 // https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-mesh-batman-adv-core/src/respondd.c
 char *ffffm_get_nexthop(void) {
@@ -112,8 +120,33 @@ void *ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
 }
 
 double ffffm_get_airtime(void) {
-	static long long last_active_time;
-	static long long last_busy_time;
-	static long long last_timestamp;
-	return -1;
+	struct unl *unl = calloc(sizeof(unl), 1);
+	double ret = FFFFM_INVALID_AIRTIME;
+
+	int status = unl_genl_init(unl, NL80211_GENL_NAME);
+	if (status < 0)
+		goto end;
+
+	struct nl_msg *msg = unl_genl_msg(unl, NL80211_CMD_GET_SURVEY, false);
+	if (!msg)
+		goto end;
+
+	NLA_PUT_STRING(msg, NL80211_ATTR_IFNAME, airtime_interface);
+	if (unl_genl_request_single(unl, msg, &msg) < 0)
+		goto end;
+
+	struct nlattr *attr = unl_find_attr(unl, msg, NL80211_ATTR_SURVEY_INFO);
+
+	struct nlattr *tb[NL80211_SURVEY_INFO_MAX + 1];
+	status = nla_parse_nested(tb, NL80211_SURVEY_INFO_MAX, attr, NULL);
+	uint64_t channel_active_time = nla_get_u64(tb[NL80211_SURVEY_INFO_TIME]);
+	uint64_t channel_busy_time = nla_get_u64(tb[NL80211_SURVEY_INFO_TIME_BUSY]);
+
+	ret = ((double) channel_busy_time) / channel_active_time;
+
+end:
+nla_put_failure:
+	unl_free(unl);
+	nlmsg_free(msg);
+	return ret;
 }

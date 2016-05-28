@@ -36,9 +36,19 @@ static int get_wifi_info(lua_State *L) {
 	return 0;
 }
 
+static int get_airtime(lua_State *L) {
+	double airtime = ffffm_get_airtime();
+	if (FFFFM_INVALID_AIRTIME == airtime)
+		return 0;
+
+	lua_pushnumber(L, airtime);
+	return 1;
+}
+
 static const luaL_Reg ffffmlib[] = {
 	{"get_nexthop", get_nexthop},
 	{"get_wifi_info", get_wifi_info},
+	{"get_airtime", get_airtime},
 	{NULL, NULL},
 };
 
