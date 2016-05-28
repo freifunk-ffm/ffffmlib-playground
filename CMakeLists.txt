@@ -32,6 +32,9 @@ target_link_libraries(ffffm-lua ffffm ${LUA_LIBRARIES})
 install(FILES $<TARGET_FILE:ffffm-lua>
 	RENAME ffffm.so
 	DESTINATION ${LUA_CMOD_DESTINATION})
+install(FILES gluon-announce.lua
+	RENAME ffffm
+	DESTINATION lib/gluon/announce/nodeinfo.d)
 
 add_executable(ffffm-test ffffm-test.c)
 target_link_libraries(ffffm-test ffffm)
