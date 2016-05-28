@@ -32,7 +32,6 @@
 static struct json_object *get_nexthop(void) {
 	struct json_object *ret;
 	char *nexthop_s;
-	struct json_object *nexthop;
 
 	nexthop_s = ffffm_get_nexthop();
 	if (!nexthop_s)
@@ -104,5 +103,5 @@ static struct json_object *respondd_provider_nodeinfo(void) {
 
 const struct respondd_provider_info respondd_providers[] = {
 	{"nodeinfo", respondd_provider_nodeinfo},
-	{}
+	{0},
 };

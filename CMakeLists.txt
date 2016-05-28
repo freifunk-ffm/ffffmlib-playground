@@ -11,6 +11,7 @@ CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "NOT LUA" OFF)
 
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(LUA_PACKAGE lua5.1)
+set(CMAKE_C_FLAGS "-O3 -Wall --std=c99 -g3 -Wpedantic")
 
 INCLUDE(FindPkgConfig)
 pkg_search_module(UNL REQUIRED libnl-tiny)

@@ -10,5 +10,5 @@ struct ffffm_wifi_info {
 
 char *ffffm_get_nexthop(void);
 struct ffffm_wifi_info *ffffm_get_wifi_info(void);
-void *ffffm_free_wifi_info(struct ffffm_wifi_info *i);
+void ffffm_free_wifi_info(struct ffffm_wifi_info *i);
 double ffffm_get_airtime(void);

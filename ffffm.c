@@ -115,7 +115,7 @@ end:
 	return ret;
 }
 
-void *ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
+void ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
 	free(i);
 }
 
