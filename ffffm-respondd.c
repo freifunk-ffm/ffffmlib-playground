@@ -1,3 +1,26 @@
+/*
+  Copyright (c) 2016, Thomas Weißschuh <freifunk@t-8ch.de>
+  Copyright (c) 2016, Matthias Schiffer <mschiffer@universe-factory.net>
+  All rights reserved.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+    1. Redistributions of source code must retain the above copyright notice,
+       this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <string.h>
 
 #include <json-c/json.h>
@@ -7,54 +30,6 @@
 
 
 #include "ffffm.h"
-
-// https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-node-info/src/respondd.c
-static struct json_object * get_number(struct uci_context *ctx, struct uci_section *s, const char *name) {
-	const char *val = uci_lookup_option_string(ctx, s, name);
-	if (!val || !*val)
-		return NULL;
-
-	char *end;
-	double d = strtod(val, &end);
-	if (*end)
-		return NULL;
-
-	return json_object_new_double(d);
-}
-
-// https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-node-info/src/respondd.c
-static struct uci_section * get_first_section(struct uci_package *p, const char *type) {
-	struct uci_element *e;
-	uci_foreach_element(&p->sections, e) {
-		struct uci_section *s = uci_to_section(e);
-		if (!strcmp(s->type, type))
-			return s;
-	}
-
-	return NULL;
-}
-
-//static struct get_wireless_info(void) {
-//	struct uci_context *ctx = uci_alloc_context();
-//	struct json_object *ret;
-//
-//	ctx->flags &= ~UCI_FLAG_STRICT;
-//
-//	struct uci_package *p;
-//	if (!uci_load(ctx, "wireless", &p)) {
-//		struct json_object *location = get_location(ctx, p);
-//		if (location)
-//			json_object_object_add(ret, "location", location);
-//
-//		struct json_object *owner = get_owner(ctx, p);
-//		if (owner)
-//			json_object_object_add(ret, "owner", owner);
-//
-//		json_object_object_add(ret, "system", get_system(ctx, p));
-//	}
-//
-//	uci_free_context(ctx);
-//}
 
 static struct json_object *get_nexthop(void) {
 	struct json_object *ret;
@@ -70,14 +45,60 @@ static struct json_object *get_nexthop(void) {
 	return ret;
 }
 
+static struct json_object *get_wifi_info(void) {
+	struct ffffm_wifi_info *i = ffffm_get_wifi_info();
+	if (!i)
+		goto end;
+
+	struct json_object *ret = json_object_new_object();
+	if (!ret)
+		goto end;
+
+	struct json_object *w24 = json_object_new_object();
+	if (!w24)
+		goto end;
+
+	if (i->channel_24 != FFFFM_INVALID_CHANNEL) {
+		struct json_object *w24_c = json_object_new_int64(i->channel_24);
+		if (!w24_c)
+			goto end;
+		json_object_object_add(w24, "channel", w24_c);
+	}
+	json_object_object_add(ret, "24", w24);
+
+	struct json_object *w50 = json_object_new_object();
+	if (!w50)
+		goto end;
+
+	if (i->channel_50 != FFFFM_INVALID_CHANNEL) {
+		struct json_object *w50_c = json_object_new_int64(i->channel_50);
+		if (!w50_c)
+			goto end;
+		json_object_object_add(w50, "channel", w50_c);
+	}
+
+	json_object_object_add(ret, "50", w50);
+end:
+	ffffm_free_wifi_info(i);
+	return ret;
+	
+}
+
 static struct json_object *respondd_provider_nodeinfo(void) {
 	struct json_object *ret = json_object_new_object();
 
-	struct json_object *nexthop;
+	if (!ret)
+		return NULL;
+
+	struct json_object *nexthop, *wifi_info;
 
 	nexthop = get_nexthop();
 	if (nexthop)
 		json_object_object_add(ret, "nexthop", nexthop);
+
+	wifi_info = get_wifi_info();
+	if (wifi_info)
+		json_object_object_add(ret, "wifi_info", wifi_info);
 
 	return ret;
 }
