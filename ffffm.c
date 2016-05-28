@@ -59,11 +59,3 @@ double ffffm_get_airtime(void) {
 	static long long last_timestamp;
 	return -1;
 }
-
-int main() {
-	char *nexthop = ffffm_get_nexthop();
-	if (nexthop)
-		printf("%s\n", nexthop);
-	else
-		printf("argh\n");
-}
