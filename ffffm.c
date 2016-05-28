@@ -120,7 +120,7 @@ void *ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
 }
 
 double ffffm_get_airtime(void) {
-	struct unl *unl = calloc(sizeof(unl), 1);
+	struct unl *unl = calloc(1, sizeof(*unl));
 	double ret = FFFFM_INVALID_AIRTIME;
 
 	int status = unl_genl_init(unl, NL80211_GENL_NAME);
