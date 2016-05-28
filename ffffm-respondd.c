@@ -26,8 +26,6 @@
 #include <json-c/json.h>
 
 #include <respondd.h>
-#include <uci.h>
-
 
 #include "ffffm.h"
 
