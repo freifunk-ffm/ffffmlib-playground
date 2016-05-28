@@ -22,19 +22,18 @@ if(LUA)
 endif()
 
 if(RESPONDD)
-pkg_search_module(JSON REQUIRED json-c)
+	pkg_search_module(JSON REQUIRED json-c)
 endif()
 
 add_library(ffffm ffffm.c)
-target_link_libraries(ffffm uci)
-target_link_libraries(ffffm ${UNL_LIBRARIES})
+target_link_libraries(ffffm uci ${UNL_LIBRARIES})
 target_include_directories(ffffm PUBLIC ${UNL_INCLUDE_DIRS})
 install(TARGETS ffffm
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib/static)
 
 if(RESPONDD)
-	add_library(ffffm-respondd ffffm-respondd.c)
+	add_library(ffffm-respondd ffffm-respondd.c) # FIXME make this a module
 	target_link_libraries(ffffm-respondd ffffm)
 	target_link_libraries(ffffm-respondd ffffm ${JSON_LIBRARIES})
 	target_include_directories(ffffm-respondd PUBLIC ${JSON_INCLUDE_DIRS})
@@ -44,7 +43,7 @@ if(RESPONDD)
 endif()
 
 if(LUA)
-	add_library(ffffm-lua ffffm-lua.c)
+	add_library(ffffm-lua ffffm-lua.c) # FIXME make this a module
 	target_include_directories(ffffm-lua PUBLIC ${LUA_INCLUDE_DIRS})
 	target_link_libraries(ffffm-lua ffffm ${LUA_LIBRARIES})
 	install(FILES $<TARGET_FILE:ffffm-lua>
