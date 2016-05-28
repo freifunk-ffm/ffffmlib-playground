@@ -4,7 +4,7 @@ PROJECT(ffffmlib C)
 
 INCLUDE(CMakeDependentOption)
 
-option(BUILD_SHARED_LIBS "Use shared libraries" ON)
+option(BUILD_SHARED_LIBS "Use shared libraries" OFF)
 option(RESPONDD "Enable respondd support" ON)
 option(LUA "Enable lua support" ON)
 CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "NOT LUA" OFF)
@@ -30,7 +30,8 @@ target_link_libraries(ffffm uci)
 target_link_libraries(ffffm ${UNL_LIBRARIES})
 target_include_directories(ffffm PUBLIC ${UNL_INCLUDE_DIRS})
 install(TARGETS ffffm
-	LIBRARY DESTINATION lib)
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib/static)
 
 if(RESPONDD)
 	add_library(ffffm-respondd ffffm-respondd.c)
