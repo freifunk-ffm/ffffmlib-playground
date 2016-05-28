@@ -10,8 +10,7 @@ struct ffffm_wireless_context {
 	struct uci_context *uctx;
 };
 
-//static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
-static const char *gatewayfile = "test";
+static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
 
 // https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-mesh-batman-adv-core/src/respondd.c
 char *ffffm_get_nexthop() {
