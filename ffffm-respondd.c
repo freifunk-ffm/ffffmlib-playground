@@ -54,30 +54,18 @@ static struct json_object *get_wifi_info(void) {
 	if (!ret)
 		goto end;
 
-	struct json_object *w24 = json_object_new_object();
-	if (!w24)
-		goto end;
-
 	if (i->channel_24 != FFFFM_INVALID_CHANNEL) {
 		struct json_object *w24_c = json_object_new_int64(i->channel_24);
 		if (!w24_c)
 			goto end;
-		json_object_object_add(w24, "channel", w24_c);
+		json_object_object_add(ret, "channel_24", w24_c);
 	}
-	json_object_object_add(ret, "24", w24);
-
-	struct json_object *w50 = json_object_new_object();
-	if (!w50)
-		goto end;
-
 	if (i->channel_50 != FFFFM_INVALID_CHANNEL) {
 		struct json_object *w50_c = json_object_new_int64(i->channel_50);
 		if (!w50_c)
 			goto end;
-		json_object_object_add(w50, "channel", w50_c);
+		json_object_object_add(ret, "channel_50", w50_c);
 	}
-
-	json_object_object_add(ret, "50", w50);
 end:
 	ffffm_free_wifi_info(i);
 	return ret;
