@@ -13,10 +13,16 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(LUA_PACKAGE lua5.1)
 
 INCLUDE(FindPkgConfig)
-pkg_search_module(LUA REQUIRED ${LUA_PACKAGE})
-pkg_get_variable(LUA_CMOD_DESTINATION ${LUA_PACKAGE} INSTALL_CMOD)
-pkg_search_module(JSON REQUIRED json-c)
 pkg_search_module(UNL REQUIRED libnl-tiny)
+
+if(LUA)
+	pkg_search_module(LUA REQUIRED ${LUA_PACKAGE})
+	pkg_get_variable(LUA_CMOD_DESTINATION ${LUA_PACKAGE} INSTALL_CMOD)
+endif()
+
+if(RESPONDD)
+pkg_search_module(JSON REQUIRED json-c)
+endif()
 
 add_library(ffffm ffffm.c)
 target_link_libraries(ffffm uci)
