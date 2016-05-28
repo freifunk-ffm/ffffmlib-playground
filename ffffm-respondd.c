@@ -2,7 +2,7 @@
 
 #include <json-c/json.h>
 
-//#include <respondd.h>
+#include <respondd.h>
 #include <uci.h>
 
 
@@ -83,12 +83,7 @@ static struct json_object *respondd_provider_nodeinfo(void) {
 }
 
 
-//const struct respondd_provider_info respondd_providers[] = {
-//	{"nodeinfo", respondd_provider_nodeinfo},
-//	{}
-//};
-
-int main() {
-#include <stdio.h>
-	printf("%s", json_object_to_json_string(respondd_provider_nodeinfo()));
-}
+const struct respondd_provider_info respondd_providers[] = {
+	{"nodeinfo", respondd_provider_nodeinfo},
+	{}
+};
