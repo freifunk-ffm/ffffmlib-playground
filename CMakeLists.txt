@@ -7,6 +7,7 @@ INCLUDE(CMakeDependentOption)
 option(BUILD_SHARED_LIBS "Use shared libraries" ON)
 option(RESPONDD "Enable respondd support" ON)
 option(LUA "Enable lua support" ON)
+option(INSTALL_TESTS "Also install test binaries" OFF)
 CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "LUA" ON)
 
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
@@ -75,13 +76,25 @@ enable_testing()
 add_executable(ffffm-test ffffm-test.c)
 target_link_libraries(ffffm-test ffffm)
 add_test(NAME ffffm-test COMMAND ffffm-test)
+if(INSTALL_TESTS)
+	install(TARGETS ffffm-test
+		RUNTIME DESTINATION bin)
+endif()
 
 if(RESPONDD)
 	add_executable(ffffm-respondd-test ffffm-respondd-test.c)
 	target_link_libraries(ffffm-respondd-test ffffm-respondd)
 	add_test(NAME ffffm-respondd-test COMMAND ffffm-respondd-test)
+	if(INSTALL_TESTS)
+		install(TARGETS ffffm-respondd-test
+			RUNTIME DESTINATION bin)
+	endif()
 endif()
 
 if(LUA)
 	add_test(NAME ffffm-lua-test COMMAND ffffm-lua-test)
+	if(INSTALL_TESTS)
+		install(PROGRAMS ffffm-lua-test
+			DESTINATION bin)
+	endif()
 endif()
