@@ -139,8 +139,8 @@ double ffffm_get_airtime(void) {
 
 	struct nlattr *tb[NL80211_SURVEY_INFO_MAX + 1];
 	status = nla_parse_nested(tb, NL80211_SURVEY_INFO_MAX, attr, NULL);
-	uint64_t channel_active_time = nla_get_u64(tb[NL80211_SURVEY_INFO_TIME]);
-	uint64_t channel_busy_time = nla_get_u64(tb[NL80211_SURVEY_INFO_TIME_BUSY]);
+	uint64_t channel_active_time = nla_get_u64(tb[NL80211_SURVEY_INFO_CHANNEL_TIME]);
+	uint64_t channel_busy_time = nla_get_u64(tb[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
 
 	ret = ((double) channel_busy_time) / channel_active_time;
 
