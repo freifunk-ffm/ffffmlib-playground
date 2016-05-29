@@ -7,7 +7,7 @@ INCLUDE(CMakeDependentOption)
 option(BUILD_SHARED_LIBS "Use shared libraries" ON)
 option(RESPONDD "Enable respondd support" ON)
 option(LUA "Enable lua support" ON)
-CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "NOT LUA" OFF)
+CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "LUA" ON)
 
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(LUA_PACKAGE lua5.1 lua)
