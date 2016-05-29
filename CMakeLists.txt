@@ -52,7 +52,7 @@ if(RESPONDD)
 	target_link_libraries(ffffm-respondd ffffm ${JSON_LIBRARIES})
 	target_include_directories(ffffm-respondd PUBLIC ${JSON_INCLUDE_DIRS})
 #	install(FILES $<TARGET_FILE:ffffm-respondd>
-	install(FILES /home/user/OpenWrt-SDK-15.05-ar71xx-generic/build_dir/target-mips_34kc_uClibc-0.9.33.2/playground-1.0.0/ipkg-install/usr/lib/libffffm.so
+	install(FILES libffffm-respondd.so
 		RENAME ffffm.so
 		DESTINATION lib/gluon/respondd/)
 endif()
@@ -62,7 +62,7 @@ if(LUA)
 	target_include_directories(ffffm-lua PUBLIC ${LUA_INCLUDE_DIRS})
 	target_link_libraries(ffffm-lua ffffm ${LUA_LIBRARIES})
 #	install(FILES $<TARGET_FILE:ffffm-lua>
-	install(FILES /home/user/OpenWrt-SDK-15.05-ar71xx-generic/build_dir/target-mips_34kc_uClibc-0.9.33.2/playground-1.0.0/ipkg-install/usr/lib/gluon/respondd/ffffm.so
+	install(FILES libffffm-lua.so
 		RENAME ffffm.so
 		DESTINATION ${LUAPATH})
 endif()
