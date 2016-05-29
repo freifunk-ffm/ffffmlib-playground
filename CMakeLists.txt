@@ -4,7 +4,7 @@ PROJECT(ffffmlib C)
 
 INCLUDE(CMakeDependentOption)
 
-option(BUILD_SHARED_LIBS "Use shared libraries" OFF)
+option(BUILD_SHARED_LIBS "Use shared libraries" ON)
 option(RESPONDD "Enable respondd support" ON)
 option(LUA "Enable lua support" ON)
 CMAKE_DEPENDENT_OPTION(ALFRED "Enable alfred support" ON "NOT LUA" OFF)
