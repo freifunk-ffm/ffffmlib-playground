@@ -46,7 +46,7 @@ install(TARGETS ffffm
 	ARCHIVE DESTINATION lib/static)
 
 if(RESPONDD)
-	add_library(ffffm-respondd ffffm-respondd.c) # FIXME make this a module
+	add_library(ffffm-respondd SHARED ffffm-respondd.c) # FIXME make this a module
 	target_link_libraries(ffffm-respondd ffffm)
 	target_link_libraries(ffffm-respondd ffffm ${JSON_LIBRARIES})
 	target_include_directories(ffffm-respondd PUBLIC ${JSON_INCLUDE_DIRS})
@@ -56,7 +56,7 @@ if(RESPONDD)
 endif()
 
 if(LUA)
-	add_library(ffffm-lua ffffm-lua.c) # FIXME make this a module
+	add_library(ffffm-lua SHARED ffffm-lua.c) # FIXME make this a module
 	target_include_directories(ffffm-lua PUBLIC ${LUA_INCLUDE_DIRS})
 	target_link_libraries(ffffm-lua ffffm ${LUA_LIBRARIES})
 	install(FILES $<TARGET_FILE:ffffm-lua>
