@@ -39,7 +39,7 @@ if(RESPONDD)
 	pkg_search_module(JSON REQUIRED json-c)
 endif()
 
-add_library(ffffm ffffm.c)
+add_library(ffffm nexthop.c wifi_info.c airtime.c)
 target_link_libraries(ffffm uci ${UNL_LIBRARIES})
 target_include_directories(ffffm PUBLIC ${UNL_INCLUDE_DIRS})
 install(TARGETS ffffm
