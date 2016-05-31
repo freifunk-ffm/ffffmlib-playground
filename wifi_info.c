@@ -43,6 +43,10 @@ static inline unsigned char parse_channel(const char *s) {
 	return (unsigned char)(result % UCHAR_MAX);
 }
 
+static inline unsigned char parse_txpower(const char *s) {
+        return parse_channel(s);
+}
+
 struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 	struct uci_context *ctx = uci_alloc_context();
 	ctx->flags &= ~UCI_FLAG_STRICT;
@@ -57,9 +61,13 @@ struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 
 	const char *c24 = lookup_option_value(ctx, p, wifi_24_dev, "channel");
 	const char *c50 = lookup_option_value(ctx, p, wifi_50_dev, "channel");
+	const char *t24 = lookup_option_value(ctx, p, wifi_24_dev, "txpower");
+	const char *t50 = lookup_option_value(ctx, p, wifi_50_dev, "txpower");
 
-	ret->channel_24 = parse_channel(c24);
-	ret->channel_50 = parse_channel(c50);
+	ret->c24 = parse_channel(c24);
+	ret->c50 = parse_channel(c50);
+	ret->t24 = parse_txpower(t24);
+	ret->t50 = parse_txpower(t50);
 end:
         if (ctx)
                 uci_free_context(ctx);
@@ -69,8 +77,4 @@ error:
                 free(ret);
 	ret = NULL;
 	goto end;
-}
-
-void ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
-	free(i);
 }

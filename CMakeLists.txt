@@ -47,13 +47,20 @@ install(TARGETS ffffm
 	ARCHIVE DESTINATION lib/static)
 
 if(RESPONDD)
-	add_library(ffffm-respondd SHARED ffffm-respondd.c) # FIXME make this a module
-	target_link_libraries(ffffm-respondd ffffm)
-	target_link_libraries(ffffm-respondd ffffm ${JSON_LIBRARIES})
-	target_include_directories(ffffm-respondd PUBLIC ${JSON_INCLUDE_DIRS})
-#	install(FILES $<TARGET_FILE:ffffm-respondd>
-	install(FILES libffffm-respondd.so
-		RENAME ffffm.so
+	add_library(respondd-nexthop SHARED respondd-nexthop.c) # FIXME make this a module
+	target_link_libraries(respondd-nexthop ffffm ${JSON_LIBRARIES})
+	target_include_directories(respondd-nexthop PUBLIC ${JSON_INCLUDE_DIRS})
+#	install(FILES $<TARGET_FILE:respondd-nexthop>
+	install(FILES librespondd-nexthop.so
+		RENAME nexthop.so
+		DESTINATION lib/gluon/respondd/)
+
+	add_library(respondd-wireless SHARED respondd-wireless.c) # FIXME make this a module
+	target_link_libraries(respondd-wireless ffffm ${JSON_LIBRARIES})
+	target_include_directories(respondd-wireless PUBLIC ${JSON_INCLUDE_DIRS})
+#	install(FILES $<TARGET_FILE:respondd-wireless>
+	install(FILES librespondd-wireless.so
+		RENAME wireless.so
 		DESTINATION lib/gluon/respondd/)
 endif()
 
@@ -83,15 +90,15 @@ if(INSTALL_TESTS)
 		RUNTIME DESTINATION bin)
 endif()
 
-if(RESPONDD)
-	add_executable(ffffm-respondd-test ffffm-respondd-test.c)
-	target_link_libraries(ffffm-respondd-test ffffm-respondd)
-	add_test(NAME ffffm-respondd-test COMMAND ffffm-respondd-test)
-	if(INSTALL_TESTS)
-		install(TARGETS ffffm-respondd-test
-			RUNTIME DESTINATION bin)
-	endif()
-endif()
+#if(RESPONDD)
+#	add_executable(ffffm-respondd-test ffffm-respondd-test.c)
+#	target_link_libraries(ffffm-respondd-test ffffm-respondd)
+#	add_test(NAME ffffm-respondd-test COMMAND ffffm-respondd-test)
+#	if(INSTALL_TESTS)
+#		install(TARGETS ffffm-respondd-test
+#			RUNTIME DESTINATION bin)
+#	endif()
+#endif()
 
 if(LUA)
 	add_test(NAME ffffm-lua-test COMMAND ffffm-lua-test)

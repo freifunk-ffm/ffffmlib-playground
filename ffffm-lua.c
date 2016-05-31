@@ -27,14 +27,14 @@ static int get_wifi_info(lua_State *L) {
 
 	lua_newtable(L);
 
-	if (i->channel_24) {
-		lua_pushstring(L, "channel_24");
-		lua_pushinteger(L, i->channel_24);
+	if (i->c24) {
+		lua_pushstring(L, "chan2");
+		lua_pushinteger(L, i->c24);
 		lua_settable(L,-3);
 	}
-	if (i->channel_50) {
-		lua_pushstring(L, "channel_50");
-		lua_pushinteger(L, i->channel_50);
+	if (i->c50) {
+		lua_pushstring(L, "chan5");
+		lua_pushinteger(L, i->c50);
 		lua_settable(L, -3);
 	}
 
