@@ -91,11 +91,20 @@ static inline const char *lookup_option_value(
 
 static inline unsigned char parse_channel(const char *s) {
 	char *endptr = NULL;
-	long int result = strtol(s, &endptr, 10);
+	long int result;
 
+        if (!s)
+		return FFFFM_INVALID_CHANNEL;
+
+        result = strtol(s, &endptr, 10);
+
+        if (!endptr)
+		return FFFFM_INVALID_CHANNEL;
 	if ('\0' != *endptr)
 		return FFFFM_INVALID_CHANNEL;
 	if (result > UCHAR_MAX)
+		return FFFFM_INVALID_CHANNEL;
+	if (result < 0)
 		return FFFFM_INVALID_CHANNEL;
 	
 	return (unsigned char)(result % UCHAR_MAX);
@@ -106,7 +115,6 @@ struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 	ctx->flags &= ~UCI_FLAG_STRICT;
 
 	struct ffffm_wifi_info *ret = calloc(1, sizeof(&ret));
-
 	if (!ret)
 		goto end;
 
@@ -120,10 +128,12 @@ struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 	ret->channel_24 = parse_channel(c24);
 	ret->channel_50 = parse_channel(c50);
 end:
-	uci_free_context(ctx);
+        if (ctx)
+                uci_free_context(ctx);
 	return ret;
 error:
-	free(ret);
+        if(ret)
+                free(ret);
 	ret = NULL;
 	goto end;
 }
