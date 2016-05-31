@@ -26,14 +26,19 @@ static int get_wifi_info(lua_State *L) {
 		return 0;
 
 	lua_newtable(L);
-	lua_pushstring(L, "channel_24");
-	lua_pushinteger(L, i->channel_24);
-	lua_settable(L, -3);
-	lua_pushstring(L, "channel_50");
-	lua_pushinteger(L, i->channel_50);
-	lua_settable(L, -3);
 
-	return 0;
+	if (i->channel_24) {
+		lua_pushstring(L, "channel_24");
+		lua_pushinteger(L, i->channel_24);
+		lua_settable(L,-3);
+	}
+	if (i->channel_50) {
+		lua_pushstring(L, "channel_50");
+		lua_pushinteger(L, i->channel_50);
+		lua_settable(L, -3);
+	}
+
+	return 1;
 }
 
 static int get_airtime(lua_State *L) {
