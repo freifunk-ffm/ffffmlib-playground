@@ -70,7 +70,7 @@ endif()
 if(ALFRED)
 	install(FILES gluon-announce.lua
 		RENAME ffffm
-		DESTINATION lib/gluon/announce/nodeinfo.d)
+		DESTINATION lib/gluon/announce/statistics.d)
 endif()
 
 enable_testing()
