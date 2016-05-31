@@ -31,8 +31,11 @@
 #include <uci.h>
 
 #include <sys/socket.h>
-#include <unl.h>
 #include <linux/nl80211.h>
+#include <netlink/netlink.h>
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+#include <net/if.h>
 
 #include "ffffm.h"
 
@@ -43,6 +46,12 @@ static const char *gatewayfile = "/sys/kernel/debug/batman_adv/bat0/gateways";
 static const char *wifi_24_dev = "radio0";
 static const char *wifi_50_dev = "radio1";
 static const char *airtime_interface = "client0";
+
+struct airtime_result {
+        uint32_t frequency;
+        uint64_t active_time;
+        uint64_t busy_time;
+};
 
 // https://github.com/freifunk-gluon/gluon/blob/d2b74b4cf048ecb8706809021332ed3e7c72b2f3/package/gluon-mesh-batman-adv-core/src/respondd.c
 char *ffffm_get_nexthop(void) {
@@ -113,40 +122,112 @@ struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 end:
 	uci_free_context(ctx);
 	return ret;
+error:
+	free(ret);
+	ret = NULL;
+	goto end;
 }
 
 void ffffm_free_wifi_info(struct ffffm_wifi_info *i) {
 	free(i);
 }
 
+static int survey_airtime_handler(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *tb[NL80211_ATTR_MAX + 1];
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr *sinfo[NL80211_SURVEY_INFO_MAX + 1];
+
+        struct airtime_result *result;
+
+	static struct nla_policy survey_policy[NL80211_SURVEY_INFO_MAX + 1] = {
+		[NL80211_SURVEY_INFO_FREQUENCY] = { .type = NLA_U32 },
+	};
+
+        result = (struct airtime_result *) arg;
+
+        if (result->frequency)
+                return NL_SKIP;
+
+	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
+		  genlmsg_attrlen(gnlh, 0), NULL);
+
+	if (!tb[NL80211_ATTR_SURVEY_INFO])
+                goto abort;
+
+	if (nla_parse_nested(sinfo, NL80211_SURVEY_INFO_MAX,
+			     tb[NL80211_ATTR_SURVEY_INFO],
+			     survey_policy))
+                goto abort;
+
+	if (!sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]) 
+                goto abort;
+	if (!sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY])
+                goto abort;
+	if (!sinfo[NL80211_SURVEY_INFO_FREQUENCY])
+                goto abort;
+
+        result->frequency = (uint32_t)nla_get_u32(sinfo[NL80211_SURVEY_INFO_FREQUENCY]),
+        result->active_time = (uint64_t)nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]);
+        result->busy_time = (uint64_t)nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
+
+abort:
+        return NL_SKIP;
+}
+
 double ffffm_get_airtime(void) {
-	struct unl *unl = calloc(1, sizeof(*unl));
-	double ret = FFFFM_INVALID_AIRTIME;
+        double ret = FFFFM_INVALID_AIRTIME;
+        int ctrl, ifx, flags;
+        struct nl_sock *sk = NULL;
+        struct nl_msg *msg = NULL;
+        enum nl80211_commands cmd;
+        struct airtime_result *result = NULL;
 
-	int status = unl_genl_init(unl, NL80211_GENL_NAME);
-	if (status < 0)
-		goto end;
+#define CHECK(x) { if (!(x)) { printf("error on line %d\n",  __LINE__); goto error; } }
 
-	struct nl_msg *msg = unl_genl_msg(unl, NL80211_CMD_GET_SURVEY, false);
-	if (!msg)
-		goto end;
+        CHECK(sk = nl_socket_alloc());
+        CHECK(genl_connect(sk) >= 0);
 
-	NLA_PUT_STRING(msg, NL80211_ATTR_IFNAME, airtime_interface);
-	if (unl_genl_request_single(unl, msg, &msg) < 0)
-		goto end;
+        CHECK(ctrl = genl_ctrl_resolve(sk, NL80211_GENL_NAME));
+        CHECK(result = calloc(1, sizeof(*result)));
+        CHECK(nl_socket_modify_cb(
+                sk, NL_CB_VALID, NL_CB_CUSTOM, survey_airtime_handler, result) == 0);
+        CHECK(msg = nlmsg_alloc());
+        CHECK(ifx = if_nametoindex(airtime_interface));
 
-	struct nlattr *attr = unl_find_attr(unl, msg, NL80211_ATTR_SURVEY_INFO);
+        cmd = NL80211_CMD_GET_SURVEY;
+        flags = 0;
+        flags |= NLM_F_DUMP;
 
-	struct nlattr *tb[NL80211_SURVEY_INFO_MAX + 1];
-	status = nla_parse_nested(tb, NL80211_SURVEY_INFO_MAX, attr, NULL);
-	uint64_t channel_active_time = nla_get_u64(tb[NL80211_SURVEY_INFO_CHANNEL_TIME]);
-	uint64_t channel_busy_time = nla_get_u64(tb[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
+        /* TODO: check return? */
+        genlmsg_put(msg, 0, 0, ctrl, 0, flags, cmd, 0);
 
-	ret = ((double) channel_busy_time) / channel_active_time;
+        NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, ifx);
 
-end:
+        CHECK(nl_send_auto_complete(sk, msg) >= 0);
+        CHECK(nl_recvmsgs_default(sk) >= 0);
+
+	ret = ((double) result->busy_time) / result->active_time;
+
+#undef CHECK
+
+out:
+    if (msg)
+            nlmsg_free(msg);
+    msg = NULL;
+
+    if (sk)
+            nl_socket_free(sk);
+    sk = NULL;
+
+    if (result)
+            free(result);
+    result = NULL;
+
+    return ret;
+
 nla_put_failure:
-	unl_free(unl);
-	nlmsg_free(msg);
-	return ret;
+error:
+    ret = FFFFM_INVALID_AIRTIME;
+    goto out;
 }
