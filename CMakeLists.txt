@@ -75,8 +75,14 @@ if(LUA)
 endif()
 
 if(ALFRED)
-	install(FILES gluon-announce.lua
-		RENAME ffffm
+	install(FILES gluon-announce-nodeinfo-wireless.lua
+		RENAME wireless
+		DESTINATION lib/gluon/announce/nodeinfo.d)
+	install(FILES gluon-announce-statistics-wireless.lua
+		RENAME wireless
+		DESTINATION lib/gluon/announce/statistics.d)
+	install(FILES gluon-announce-statistics-nexthop.lua
+		RENAME nexthop
 		DESTINATION lib/gluon/announce/statistics.d)
 endif()
 

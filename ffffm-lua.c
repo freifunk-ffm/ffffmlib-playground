@@ -19,6 +19,14 @@ static int get_nexthop(lua_State *L) {
 	return 1;
 }
 
+static inline void add_table_entry(lua_State *L, const char *name, double value, double invalid) {
+	if (value != invalid) {
+		lua_pushstring(L, name);
+		lua_pushnumber(L, value);
+		lua_settable(L,-3);
+	}
+}
+
 static int get_wifi_info(lua_State *L) {
 	struct ffffm_wifi_info *i = ffffm_get_wifi_info();
 
@@ -26,17 +34,10 @@ static int get_wifi_info(lua_State *L) {
 		return 0;
 
 	lua_newtable(L);
-
-	if (i->c24) {
-		lua_pushstring(L, "chan2");
-		lua_pushinteger(L, i->c24);
-		lua_settable(L,-3);
-	}
-	if (i->c50) {
-		lua_pushstring(L, "chan5");
-		lua_pushinteger(L, i->c50);
-		lua_settable(L, -3);
-	}
+	add_table_entry(L, "chan2", i->c24, FFFFM_INVALID_CHANNEL);
+	add_table_entry(L, "chan5", i->c50, FFFFM_INVALID_CHANNEL);
+	add_table_entry(L, "txpower2", i->t24, FFFFM_INVALID_CHANNEL);
+	add_table_entry(L, "txpower5", i->t50, FFFFM_INVALID_CHANNEL);
 
 	return 1;
 }
@@ -46,16 +47,9 @@ static int get_airtime(lua_State *L) {
 	if (!i)
 		return 0;
 
-	if (i->a24) {
-		lua_pushstring(L, "airtime2");
-		lua_pushinteger(L, i->a24);
-		lua_settable(L,-3);
-	}
-	if (i->a50) {
-		lua_pushstring(L, "airtime5");
-		lua_pushinteger(L, i->a50);
-		lua_settable(L, -3);
-	}
+	lua_newtable(L);
+	add_table_entry(L, "airtime2", i->a24, FFFFM_INVALID_AIRTIME);
+	add_table_entry(L, "airtime5", i->a50, FFFFM_INVALID_AIRTIME);
 
 	return 1;
 }
