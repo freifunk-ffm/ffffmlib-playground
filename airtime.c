@@ -11,7 +11,8 @@
 
 const double FFFFM_INVALID_AIRTIME = -1;
 
-static const char *airtime_interface = "client0";
+static const char const *wifi_24_dev = "mesh0";
+static const char const *wifi_50_dev = "mesh1";
 
 struct airtime_result {
         uint32_t frequency;
@@ -21,20 +22,24 @@ struct airtime_result {
 
 static int survey_airtime_handler(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *tb[NL80211_ATTR_MAX + 1];
-	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-	struct nlattr *sinfo[NL80211_SURVEY_INFO_MAX + 1];
-
+	struct genlmsghdr *gnlh;
         struct airtime_result *result;
 
+	struct nlattr *tb[NL80211_ATTR_MAX + 1];
+	struct nlattr *sinfo[NL80211_SURVEY_INFO_MAX + 1];
 	static struct nla_policy survey_policy[NL80211_SURVEY_INFO_MAX + 1] = {
 		[NL80211_SURVEY_INFO_FREQUENCY] = { .type = NLA_U32 },
 	};
 
         result = (struct airtime_result *) arg;
 
+        /* another callback was already successful */
         if (result->frequency)
                 return NL_SKIP;
+
+	gnlh = nlmsg_data(nlmsg_hdr(msg));
+        if (!gnlh)
+                goto error;
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
@@ -58,11 +63,12 @@ static int survey_airtime_handler(struct nl_msg *msg, void *arg)
         result->active_time = (uint64_t)nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME]);
         result->busy_time = (uint64_t)nla_get_u64(sinfo[NL80211_SURVEY_INFO_CHANNEL_TIME_BUSY]);
 
+error:
 abort:
         return NL_SKIP;
 }
 
-double ffffm_get_airtime(void) {
+static double get_airtime_for_interface(const char *interface) {
         double ret = FFFFM_INVALID_AIRTIME;
         int ctrl, ifx, flags;
         struct nl_sock *sk = NULL;
@@ -80,7 +86,10 @@ double ffffm_get_airtime(void) {
         CHECK(nl_socket_modify_cb(
                 sk, NL_CB_VALID, NL_CB_CUSTOM, survey_airtime_handler, result) == 0);
         CHECK(msg = nlmsg_alloc());
-        CHECK(ifx = if_nametoindex(airtime_interface));
+
+        /* device does not exist */
+        if (!(ifx = if_nametoindex(interface)))
+                goto error;
 
         cmd = NL80211_CMD_GET_SURVEY;
         flags = 0;
@@ -117,4 +126,15 @@ nla_put_failure:
 error:
     ret = FFFFM_INVALID_AIRTIME;
     goto out;
+}
+
+struct ffffm_airtime *ffffm_get_airtime(void) {
+	struct ffffm_airtime *ret = calloc(1, sizeof(*ret));
+        if (!ret)
+                return NULL;
+
+        ret->a24 = get_airtime_for_interface(wifi_24_dev);
+        ret->a50 = get_airtime_for_interface(wifi_50_dev);
+        
+        return ret;
 }

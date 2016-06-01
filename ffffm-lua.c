@@ -42,11 +42,21 @@ static int get_wifi_info(lua_State *L) {
 }
 
 static int get_airtime(lua_State *L) {
-	double airtime = ffffm_get_airtime();
-	if (FFFFM_INVALID_AIRTIME == airtime)
+	struct ffffm_airtime *i = ffffm_get_airtime();
+	if (!i)
 		return 0;
 
-	lua_pushnumber(L, airtime);
+	if (i->a24) {
+		lua_pushstring(L, "airtime2");
+		lua_pushinteger(L, i->a24);
+		lua_settable(L,-3);
+	}
+	if (i->a50) {
+		lua_pushstring(L, "airtime5");
+		lua_pushinteger(L, i->a50);
+		lua_settable(L, -3);
+	}
+
 	return 1;
 }
 

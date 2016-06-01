@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include <json-c/json.h>
 
@@ -6,38 +7,49 @@
 
 #include "ffffm.h"
 
-static struct json_object *get_airtime(void) {
-	double airtime = ffffm_get_airtime();
-	if (FFFFM_INVALID_AIRTIME == airtime)
-		return NULL;
-
-	return json_object_new_double(airtime);
-}
-
 static struct json_object *respondd_provider_statistics(void) {
+
+	struct ffffm_airtime *a = NULL;
 	struct json_object *ret = json_object_new_object();
-
 	if (!ret)
-		return NULL;
+		goto end;
+        a = ffffm_get_airtime();
+        if (!a)
+                return NULL;
 
-	struct json_object *airtime;
+        struct json_object *v;
 
-	airtime = get_airtime();
-	if (airtime)
-		json_object_object_add(ret, "airtime2", airtime);
+	if (a->a24 >= 0) {
+		v = json_object_new_double(a->a24);
+		if (!v)
+			goto end;
+		json_object_object_add(ret, "airtime2", v);
+	}
+	if (a->a50 >= 0) {
+		v = json_object_new_double(a->a50);
+		if (!v)
+			goto end;
+		json_object_object_add(ret, "airtime5", v);
+	}
 
-	return ret;
+end:
+        free(a);
+        return ret;
 }
 
 static struct json_object *respondd_provider_nodeinfo(void) {
-	struct ffffm_wifi_info *i = ffffm_get_wifi_info();
+	struct ffffm_wifi_info *i = NULL;
+	struct json_object *ret = NULL;
+        
+        ret = json_object_new_object();
+	if (!ret)
+		goto end;
+
+        i = ffffm_get_wifi_info();
 	if (!i)
 		goto end;
 
-	struct json_object *ret = json_object_new_object();
         struct json_object *v;
-	if (!ret)
-		goto end;
 
 	if (i->c24) {
 		v = json_object_new_int64(i->c24);
@@ -68,7 +80,6 @@ end:
 	return ret;
 	
 }
-
 
 const struct respondd_provider_info respondd_providers[] = {
 	{"statistics", respondd_provider_statistics},

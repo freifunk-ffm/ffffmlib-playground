@@ -10,6 +10,13 @@ struct ffffm_wifi_info {
 	unsigned char t50;
 };
 
+struct ffffm_airtime {
+	double a24;
+	double a50;
+};
+
 char *ffffm_get_nexthop(void);
 struct ffffm_wifi_info *ffffm_get_wifi_info(void);
-double ffffm_get_airtime(void);
+struct ffffm_airtime *ffffm_get_airtime(void);
+
+#define DEBUG { printf("Reached %s:%d\n", __FILE__, __LINE__); fflush(NULL); }

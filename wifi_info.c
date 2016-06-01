@@ -9,8 +9,8 @@
 
 const unsigned int FFFFM_INVALID_CHANNEL = 0;
 
-static const char *wifi_24_dev = "radio0";
-static const char *wifi_50_dev = "radio1";
+static const char const *wifi_24_dev = "radio0";
+static const char const *wifi_50_dev = "radio1";
 
 static inline const char *lookup_option_value(
 		struct uci_context *ctx, struct uci_package *p,
@@ -48,29 +48,33 @@ static inline unsigned char parse_txpower(const char *s) {
 }
 
 struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
-	struct uci_context *ctx = uci_alloc_context();
+	struct uci_package *p = NULL;
+	struct uci_context *ctx = NULL;
+	struct ffffm_wifi_info *ret = NULL;
+
+	ctx = uci_alloc_context();
+        if (!ctx)
+                goto error;
 	ctx->flags &= ~UCI_FLAG_STRICT;
 
-	struct ffffm_wifi_info *ret = calloc(1, sizeof(&ret));
+	ret = calloc(1, sizeof(*ret));
 	if (!ret)
-		goto end;
+		goto error;
 
-	struct uci_package *p;
 	if (uci_load(ctx, "wireless", &p))
-		goto end;
+		goto error;
 
-	const char *c24 = lookup_option_value(ctx, p, wifi_24_dev, "channel");
-	const char *c50 = lookup_option_value(ctx, p, wifi_50_dev, "channel");
-	const char *t24 = lookup_option_value(ctx, p, wifi_24_dev, "txpower");
-	const char *t50 = lookup_option_value(ctx, p, wifi_50_dev, "txpower");
 
-	ret->c24 = parse_channel(c24);
-	ret->c50 = parse_channel(c50);
-	ret->t24 = parse_txpower(t24);
-	ret->t50 = parse_txpower(t50);
+	ret->c24 = parse_channel(lookup_option_value(ctx, p, wifi_24_dev, "channel"));
+	ret->c50 = parse_channel(lookup_option_value(ctx, p, wifi_50_dev, "channel"));
+	ret->t24 = parse_txpower(lookup_option_value(ctx, p, wifi_24_dev, "txpower"));
+	ret->t50 = parse_txpower(lookup_option_value(ctx, p, wifi_50_dev, "txpower"));
 end:
-        if (ctx)
+        if (ctx) {
+                if (p)
+                        uci_unload(ctx, p);
                 uci_free_context(ctx);
+        }
 	return ret;
 error:
         if(ret)
