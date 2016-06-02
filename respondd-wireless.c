@@ -19,13 +19,13 @@ static struct json_object *respondd_provider_statistics(void) {
 
         struct json_object *v;
 
-	if (a->a24 >= 0) {
+	if (a->a24 != FFFFM_INVALID_AIRTIME) {
 		v = json_object_new_double(a->a24);
 		if (!v)
 			goto end;
 		json_object_object_add(ret, "airtime2", v);
 	}
-	if (a->a50 >= 0) {
+	if (a->a50 != FFFFM_INVALID_AIRTIME) {
 		v = json_object_new_double(a->a50);
 		if (!v)
 			goto end;
@@ -51,25 +51,25 @@ static struct json_object *respondd_provider_nodeinfo(void) {
 
         struct json_object *v;
 
-	if (i->c24) {
+	if (i->c24 != FFFFM_INVALID_CHANNEL) {
 		v = json_object_new_int64(i->c24);
 		if (!v)
 			goto end;
 		json_object_object_add(ret, "chan2", v);
 	}
-	if (i->c50) {
+	if (i->c50 != FFFFM_INVALID_CHANNEL) {
 		v = json_object_new_int64(i->c50);
 		if (!v)
 			goto end;
 		json_object_object_add(ret, "chan5", v);
 	}
-	if (i->t24) {
+	if (i->t24 != FFFFM_INVALID_TXPOWER) {
 		v = json_object_new_int64(i->t24);
 		if (!v)
 			goto end;
 		json_object_object_add(ret, "txpower2", v);
 	}
-	if (i->t50) {
+	if (i->t50 != FFFFM_INVALID_TXPOWER) {
 		v = json_object_new_int64(i->t50);
 		if (!v)
 			goto end;
