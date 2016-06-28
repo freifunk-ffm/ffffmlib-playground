@@ -5,17 +5,15 @@
 
 #include <uci.h>
 
-#include "ffffm.h"
+#include "package.h"
 
-const unsigned int FFFFM_INVALID_CHANNEL = 0;
-const unsigned int FFFFM_INVALID_TXPOWER = 0;
+const unsigned int INVALID_CHANNEL = 0;
+const unsigned int INVALID_TXPOWER = 0;
 
 static const char const *wifi_24_dev = "radio0";
 static const char const *wifi_50_dev = "radio1";
 
-static inline const char *lookup_option_value(
-		struct uci_context *ctx, struct uci_package *p,
-		const char *section_name, const char *option_name) {
+static inline const char *lookup_option_value(struct uci_context *ctx, struct uci_package *p, const char *section_name, const char *option_name) {
 
 	struct uci_section *s = uci_lookup_section(ctx, p, section_name);
 	if (!s)
@@ -27,12 +25,12 @@ static inline unsigned char parse_option(const char *s, unsigned char invalid) {
 	char *endptr = NULL;
 	long int result;
 
-        if (!s)
+	if (!s)
 		return invalid;
 
-        result = strtol(s, &endptr, 10);
+	result = strtol(s, &endptr, 10);
 
-        if (!endptr)
+	if (!endptr)
 		return invalid;
 	if ('\0' != *endptr)
 		return invalid;
@@ -40,26 +38,26 @@ static inline unsigned char parse_option(const char *s, unsigned char invalid) {
 		return invalid;
 	if (result < 0)
 		return invalid;
-	
+
 	return (unsigned char)(result % UCHAR_MAX);
 }
 
 static inline unsigned char parse_channel(const char *s) {
-        return parse_option(s, FFFFM_INVALID_CHANNEL);
+	return parse_option(s, INVALID_CHANNEL);
 }
 
 static inline unsigned char parse_txpower(const char *s) {
-        return parse_option(s, FFFFM_INVALID_TXPOWER);
+	return parse_option(s, INVALID_TXPOWER);
 }
 
-struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
+struct wifi_info *get_wifi_info(void) {
 	struct uci_package *p = NULL;
 	struct uci_context *ctx = NULL;
-	struct ffffm_wifi_info *ret = NULL;
+	struct wifi_info *ret = NULL;
 
 	ctx = uci_alloc_context();
-        if (!ctx)
-                goto error;
+	if (!ctx)
+		goto error;
 	ctx->flags &= ~UCI_FLAG_STRICT;
 
 	ret = calloc(1, sizeof(*ret));
@@ -75,15 +73,15 @@ struct ffffm_wifi_info *ffffm_get_wifi_info(void) {
 	ret->t24 = parse_txpower(lookup_option_value(ctx, p, wifi_24_dev, "txpower"));
 	ret->t50 = parse_txpower(lookup_option_value(ctx, p, wifi_50_dev, "txpower"));
 end:
-        if (ctx) {
-                if (p)
-                        uci_unload(ctx, p);
-                uci_free_context(ctx);
-        }
+	if (ctx) {
+		if (p)
+			uci_unload(ctx, p);
+			uci_free_context(ctx);
+	}
 	return ret;
 error:
-        if(ret)
-                free(ret);
+	if(ret)
+		free(ret);
 	ret = NULL;
 	goto end;
 }
